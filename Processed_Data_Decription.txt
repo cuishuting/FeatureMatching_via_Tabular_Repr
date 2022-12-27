@@ -1,0 +1,37 @@
+1. "mimic_lab_CV(MV)_reg_pre_new.csv": 1) regular preprocessing is applied
+                                       2) with common_itemid between lab_CV & lab_MV
+                                       3) common_hadm_id between lab_CV & chart_CV
+                                          common_hadm_id between lab_MV & chart_MV
+				                       4) contained itemids with recording fraction >= 30%
+2. "mimic_chart_MV/CV_reg_pre.csv": 1) regular preprocessing is applied
+                                    2) no common itemid and no common hadmid between 2 eras
+                                    3) transfer all the numeric itemids' value type from "str" to "int"/"float"
+                                    4) contains both numeric and categorical itemids' recordings
+3. "mimic_chart_MV_only_num_del_onetime_itemid.csv": 1)selecting only numeric itemids' recordings from "mimic_chart_MV/CV_reg_pre.csv"
+					                                 2) num_itemids' recording frequency are >= 30%
+					                                 3) delete those one-time-recorded numeric itemids and add these(3 itemids) one-time-recorded numeric itemids into static_mv dataset
+4. "mimic_chart_CV_only_numeric_new.csv": 1) regular preprocessing is applied (same as 2. 1))
+                                          2) transfer the obvious numeric type itemid in mimic_chart_CV from string to float
+                                             (some "unobvious" numeric itemids are currently regarded as categorical itemids)
+                                          3) Only "categorical" itemids with unique values > 10 would be considered as alternative numeric itemids
+                                             For these alternative numeric itemids, using Regular Expression to try to match
+                                             the first index in the series returned by value_counts() for itemids in these alternative numeric itemids;
+                                             if the first index has the form "xcm" or "x cm" or "xmm" or "x mm" or "Other/Remarks",
+                                             then it will be selected to transform to numeric itemid.
+                                          4) Extract the scalar part of these alternative numeric itemids and transform these scalar's values into float type
+                                             Transform all the "Other/remark" values in these alternative numeric itemids into NaN
+                                          5) The final numeric itemid list in chart_CV are the combination of "obvious" numeric itemids and those transformed alternative numeric itemids
+                                          6) Also make sure that the hadm_id in "mimic_chart_CV_only_numeric.csv" keep the same with hadm_id in "mimic_lab_CV_reg_pre.csv"
+				                          7) num_itemids' recording frequency are >= 30%
+5. "mimic_chart_MV_only_cat.csv": 1) contains cat_itemid recordings in chart_mv after: a) unique values <= 10; b) "hadm_id"s are the same as those in file "mimic_chart_mv_only_numeric.csv"
+                                                                                       c) recording frequency are >= 30%
+                                  2) cat_itemids in chart_MV are all binary, but some type of value "1" is str, while other types of value "1" are int or float.
+                                     transfer all those selected binary itemids's value type into 'integer': 0/1
+
+6. "mimic_chart_CV_only_cat.csv": 1) contains cat_itemid recordings in chart_cv after: a) unique values <= 10; b) "hadm_id"s are the same as those in file "mimic_chart_cv_only_numeric.csv"
+                                                                                       c) recording frequency are >= 30%
+                                  2) all the values in "value" column in this file is the mapped value (details of map pairs are in file "../Org_Data_and_Preprocess_ipynbs/data/chart_cv_cat_itemids_unique_value_map.csv")
+
+
+7. "mimic_static_CV/MV.csv": the hadm_id in these files are the intersection of the hadm_id in  mimic_lab_CV/MV_reg_pre.csv, mimic_chart_CV/MV_only_numeric/cat.csv
+                             The details of included static variables are in file "Preprocess_Static_Variables.ipynb"
